@@ -198,18 +198,28 @@
         renderizar();
     };
 
-    async function buscarDados() {
-        const user = auth.currentUser;
-        if(!user) return;
-        
-        showLoading(true);
+async function buscarDados() {
+    const user = auth.currentUser;
+    if(!user) return;
+    
+    showLoading(true);
+    try {
+        // Se der erro aqui (como falta de índice), o 'catch' será acionado
         const q = query(collection(db, "transacoes"), where("userId", "==", user.uid), orderBy("data", "desc"));
         const snap = await getDocs(q);
         rawData = [];
         snap.forEach(doc => rawData.push(doc.data()));
         renderizar();
-        showLoading(false);
+    } catch (e) {
+        console.error("Erro ao buscar dados: ", e);
+        // DICA: Se aparecer um erro de 'index', o link para criar o índice estará aqui no console (F12)
+        if(e.message.includes("index")) {
+            alert("O Firebase precisa criar um índice. Verifique o console (F12) e clique no link azul.");
+        }
+    } finally {
+        showLoading(false); // Isso garante que o load saia da tela
     }
+}
 
     window.adicionarRegistro = async () => {
         const user = auth.currentUser;
